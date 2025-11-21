@@ -1,17 +1,17 @@
 name: Upload Video to Buffer
 
-# on:
-#   schedule:
-#     # Run every 6 hours
-#     - cron: '0 */6 * * *'
-#   workflow_dispatch: # Allow manual triggering
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: "0 */6 * * *"
+  workflow_dispatch: # Allow manual triggering
 
 jobs:
   upload:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Required to commit and push changes
-    
+      contents: write # Required to commit and push changes
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -52,4 +52,3 @@ jobs:
           else
             echo "No changes to commit"
           fi
-
