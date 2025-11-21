@@ -1,0 +1,55 @@
+name: Upload Video to Buffer
+
+# on:
+#   schedule:
+#     # Run every 6 hours
+#     - cron: '0 */6 * * *'
+#   workflow_dispatch: # Allow manual triggering
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to commit and push changes
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Run upload
+        env:
+          # These secrets should be added in GitHub repository settings:
+          # Settings > Secrets and variables > Actions > New repository secret
+          BUFFER_COOKIES: ${{ secrets.BUFFER_COOKIES }}
+          BUFFER_ORGANIZATION_ID: ${{ secrets.BUFFER_ORGANIZATION_ID }}
+          BUFFER_CHANNEL_ID: ${{ secrets.BUFFER_CHANNEL_ID }}
+          BUFFER_USER_ID: ${{ secrets.BUFFER_USER_ID }}
+        run: bun run upload
+
+      - name: Check for changes and commit
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Changes detected, committing..."
+            git add -A
+            git commit -m "chore: move processed video to done folder [skip ci]" || exit 0
+            git push || exit 0
+            echo "Changes committed and pushed"
+          else
+            echo "No changes to commit"
+          fi
+
